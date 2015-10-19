@@ -1,2 +1,2 @@
 # tictactoe
-Machine learning experiment for 
+tic-tac-toe machine learning experiment
