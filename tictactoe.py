@@ -288,12 +288,11 @@ class Trainer:
         self.game.setBoard(successors[random.randint(0,len(successors)-1)])
 
 
-def train(learner = None, iterations = 10000):
+def train(iterations = 10000):
     game = ExperimentGenerator()
+    hypothesis = (0.0,0.0,0.0,0.0,0.0,0.0,0.0)
+    learner = PerformanceSystem(game,hypothesis,'X')
     trainer = Trainer(game,'O')
-    if learner is None:
-        hypothesis = (0.5,0.5,0.5,0.5,0.5,0.5,0.5)
-        learner = PerformanceSystem(game,hypothesis,'X')
 
     learner_wins = 0
     trainer_wins = 0
@@ -328,24 +327,22 @@ def train(learner = None, iterations = 10000):
         elif winner == 'O':
             trainer_wins += 1
         total_games += 1
-        print("Games Played: " + str(total_games))
-        print("% Games Won: " + str(learner_wins / float(total_games) * 100))
-        print("% Games Lost: " + str(trainer_wins / float(total_games) * 100))
-        print("% Cats Games: " + str((total_games - learner_wins - trainer_wins) / float(total_games) * 100) + "\n")
+        # print("Games Played: " + str(total_games))
+        # print("% Games Won: " + str(learner_wins / float(total_games) * 100))
+        # print("% Games Lost: " + str(trainer_wins / float(total_games) * 100))
+        # print("% Cats Games: " + str((total_games - learner_wins - trainer_wins) / float(total_games) * 100) + "\n")
 
         critic = Critic(learner)
         generalizer = Generalizer(learner)
         training_examples = critic.getTrainingExamples()
         learner.setHypothesis(generalizer.updateHypothesis(game.getHistory(),training_examples))
-    return learner
+    return learner, learner_wins, trainer_wins, total_games
 
 
 def main():
-    # game = ExperimentGenerator()
-    # hypothesis = (0.5,0.5,0.5,0.5,0.5,0.5,0.5)
-    # learner = PerformanceSystem(game,hypothesis,'X')
-    print("Training machine player.")
-    computer = train()
+    iterations = int(input("Enter number of training games to play: "))
+    print("Training computer...\n")
+    computer, learner_wins, trainer_wins, total_games = train(iterations)
 
     while True:
         game = ExperimentGenerator()
@@ -375,5 +372,19 @@ def main():
             print("Draw!")
         else:
             print(winner + " won!\n")
+        if winner == 'X':
+            learner_wins += 1
+        elif winner == 'O':
+            trainer_wins += 1
+        total_games += 1
+        print("Games Played: " + str(total_games))
+        print("% Games Won: " + str(learner_wins / float(total_games) * 100))
+        print("% Games Lost: " + str(trainer_wins / float(total_games) * 100))
+        print("% Cats Games: " + str((total_games - learner_wins - trainer_wins) / float(total_games) * 100) + "\n")
+
+        critic = Critic(computer)
+        generalizer = Generalizer(computer)
+        training_examples = critic.getTrainingExamples()
+        computer.setHypothesis(generalizer.updateHypothesis(game.getHistory(),training_examples))
 
 main()
