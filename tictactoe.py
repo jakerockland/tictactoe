@@ -287,22 +287,19 @@ class Trainer:
             successors = self.game.getOSuccessors()
         self.game.setBoard(successors[random.randint(0,len(successors)-1)])
 
-    def chooseTrain(self):
-        # FIXME
-        return
 
-
-def train():
+def train(learner = None, iterations = 10000):
     game = ExperimentGenerator()
-    hypothesis = (0.5,0.5,0.5,0.5,0.5,0.5,0.5)
-    learner = PerformanceSystem(game,hypothesis,'X')
     trainer = Trainer(game,'O')
+    if learner is None:
+        hypothesis = (0.5,0.5,0.5,0.5,0.5,0.5,0.5)
+        learner = PerformanceSystem(game,hypothesis,'X')
 
     learner_wins = 0
     trainer_wins = 0
     total_games = 0
 
-    for i in range(10000):
+    for i in range(iterations):
         game = ExperimentGenerator()
         learner.setGame(game)
         trainer.setGame(game)
@@ -332,33 +329,51 @@ def train():
             trainer_wins += 1
         total_games += 1
         print("Games Played: " + str(total_games))
-        print("% Games Won: " + str(learner_wins / float(total_games) * 100) + "\n")
+        print("% Games Won: " + str(learner_wins / float(total_games) * 100))
+        print("% Games Lost: " + str(trainer_wins / float(total_games) * 100))
+        print("% Cats Games: " + str((total_games - learner_wins - trainer_wins) / float(total_games) * 100) + "\n")
 
         critic = Critic(learner)
         generalizer = Generalizer(learner)
         training_examples = critic.getTrainingExamples()
         learner.setHypothesis(generalizer.updateHypothesis(game.getHistory(),training_examples))
+    return learner
 
 
 def main():
-    train()
     # game = ExperimentGenerator()
-    # game.printBoard()
-    # while game.numEmptySquares() > 0:
-    #     if game.numEmptySquares() % 2 == 0:
-    #         print("Player X's Turn")
-    #     else:
-    #         print("Player O's Turn")
-    #     x = int(input("Enter x coordinate [0,2]: "))
-    #     y = int(input("Enter y coordinate: [0,2]: "))
-    #     if game.numEmptySquares() % 2 == 0:
-    #         legal_move = game.makeMove(x,y,'X')
-    #     else:
-    #         legal_move = game.makeMove(x,y,'O')
-    #     if not legal_move:
-    #         print("Illegal move.")
-    #     game.printBoard()
-    # for board in game.getHistory():
-    #     game.printBoard(board)
+    # hypothesis = (0.5,0.5,0.5,0.5,0.5,0.5,0.5)
+    # learner = PerformanceSystem(game,hypothesis,'X')
+    print("Training machine player.")
+    computer = train()
+
+    while True:
+        game = ExperimentGenerator()
+        computer.setGame(game)
+        start_turn = random.randint(0,1)
+        if start_turn == 1:
+            player_turn = 'X'
+        else:
+            player_turn = 'O'
+        print(player_turn + " is playing first.")
+        while (game.getWinner() is None) and (game.numEmptySquares() > 0):
+            game.printBoard()
+            if player_turn == 'X':
+                computer.chooseSmart()
+                player_turn = 'O'
+            else:
+                x = int(input("Enter x coordinate [0,2]: "))
+                y = int(input("Enter y coordinate: [0,2]: "))
+                legal_move = game.makeMove(x,y,'O')
+                if not legal_move:
+                    print("Illegal move.")
+                else:
+                    player_turn = 'X'
+        winner = game.getWinner()
+        game.printBoard()
+        if winner is None:
+            print("Draw!")
+        else:
+            print(winner + " won!\n")
 
 main()
