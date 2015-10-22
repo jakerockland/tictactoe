@@ -132,6 +132,9 @@ class PerformanceSystem:
         self.mode = mode
         self.update_constant = 0.1
 
+    def getUpdateConstant(self):
+        return self.update_constant
+
     def setUpdateConstant(self, constant):
         self.update_constant = update_constant
 
@@ -203,12 +206,12 @@ class PerformanceSystem:
         if board is None:
             board = self.game.getBoard()
         x1,x2,x3,x4,x5,x6 = self.getFeatures(board)
-        w0,w1,w2,w3,w4,w5,x6 = self.hypothesis
+        w0,w1,w2,w3,w4,w5,w6 = self.hypothesis
         return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6
 
 
 class Critic:
-        def __init__(self,performance_system):
+    def __init__(self,performance_system):
         self.performance_system = performance_system
         self.game = performance_system.getGame()
 
@@ -219,7 +222,7 @@ class Critic:
             mode = self.performance_system.getMode()
             winner = self.game.getWinner(history[i])
             empty_squares = self.game.numEmptySquares(history[i])
-            board_features = self.game.getFeatures(history[i])
+            board_features = self.performance_system.getFeatures(history[i])
             if winner == mode:
                 training_examples.append([board_features,100])
             elif winner is None:
@@ -232,20 +235,22 @@ class Critic:
                         else:
                             training_examples.append([board_features,-100])
                     else:
-                        training_examples.append(board_features,self.performance_system.performEvaluation(history[i+2])])
+                        training_examples.append([board_features,self.performance_system.performEvaluation(history[i+2])])
             else:
                 training_examples.append([board_features,-100])
         return training_examples
 
 
 class Generalizer:
-    def __init__(self,hypothesis):
-        self.hypothesis = hypothesis
+    def __init__(self,performance_system):
+        self.performance_system = performance_system
+        self.update_constant = performance_system.getUpdateConstant()
+        self.hypothesis = self.performance_system.getHypothesis()
 
     def updateHypothesis(self,history,training_examples):
         for i in range(len(history)):
             w0,w1,w2,w3,w4,w5,w6 = self.hypothesis
-            v_eval = self.performEvaluation(history[i])
+            v_eval = self.performance_system.performEvaluation(history[i])
             x1,x2,x3,x4,x5,x6 = training_examples[i][0]
             v_train = training_examples[i][1]
             w0 = w0 + self.update_constant*(v_train - v_eval)
@@ -255,8 +260,7 @@ class Generalizer:
             w4 = w4 + self.update_constant*(v_train - v_eval)*x4
             w5 = w5 + self.update_constant*(v_train - v_eval)*x5
             w6 = w6 + self.update_constant*(v_train - v_eval)*x6
-            self.hypothesis = w0,w1,w2,w3,w4,w5,w6
-            return self.hypothesis
+            return w0,w1,w2,w3,w4,w5,w6
 
 
 class Trainer:
@@ -290,45 +294,50 @@ class Trainer:
 
 def train():
     game = ExperimentGenerator()
-    hypothesis = (0.5,0.5,0.5,0.5,0.5,0.5)
+    hypothesis = (0.5,0.5,0.5,0.5,0.5,0.5,0.5)
     learner = PerformanceSystem(game,hypothesis,'X')
     trainer = Trainer(game,'O')
-    generalizer = Generalizer(hypothesis)
 
     learner_wins = 0
     trainer_wins = 0
     total_games = 0
 
-    start_turn = random.randint(0,1)]
-    if start_turn == 1:
-        player_turn == 'X'
-    else:
-        player_turn == 'O'
-
-    for i in range(1000):
+    for i in range(10000):
         game = ExperimentGenerator()
         learner.setGame(game)
         trainer.setGame(game)
-        while (game.getWinner is None) and (game.numEmptySquares > 0):
+        start_turn = random.randint(0,1)
+        if start_turn == 1:
+            player_turn = 'X'
+        else:
+            player_turn = 'O'
+        # print(player_turn + " is playing first.")
+        while (game.getWinner() is None) and (game.numEmptySquares() > 0):
             if player_turn == 'X':
-                learner.chooseMove()
-                player_turn == 'O'
+                learner.chooseSmart()
+                player_turn = 'O'
             else:
                 trainer.chooseRandom()
-                player_turn == 'X'
+                player_turn = 'X'
 
         winner = game.getWinner()
+        # game.printBoard()
+        # if winner is None:
+        #     print("Draw!")
+        # else:
+        #     print(winner + " won!\n")
         if winner == 'X':
             learner_wins += 1
         elif winner == 'O':
             trainer_wins += 1
         total_games += 1
         print("Games Played: " + str(total_games))
-        print("Percentage Won: " + str((learner_wins / total_games) * 100) + "\n")
+        print("% Games Won: " + str(learner_wins / float(total_games) * 100) + "\n")
 
         critic = Critic(learner)
+        generalizer = Generalizer(learner)
         training_examples = critic.getTrainingExamples()
-        learner.setHypothesis = generalizer.updateHypothesis(game.getHistory(),training_examples)
+        learner.setHypothesis(generalizer.updateHypothesis(game.getHistory(),training_examples))
 
 
 def main():
