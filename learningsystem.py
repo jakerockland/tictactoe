@@ -241,7 +241,7 @@ class Critic:
                     training_examples.append([board_features,0])
                 else:
                     if i+2 >= len(history):
-                        if self.game.getWinner(history[len(history)-1]) == 0:
+                        if self.game.getWinner(history[len(history)-1]) is None:
                             training_examples.append([board_features,0])
                         else:
                             training_examples.append([board_features,-100])
