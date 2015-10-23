@@ -58,7 +58,6 @@ def train(iterations = 10000):
         learner.setHypothesis(generalizer.updateHypothesis(game.getHistory(),training_examples))
     return learner, learner_wins, trainer_wins, total_games
 
-
 def main():
     iterations = int(input("Enter number of training games to play: "))
     print("Training computer...\n")
