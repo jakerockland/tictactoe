@@ -335,7 +335,6 @@ def train(iterations = 10000):
         elif winner == 'O':
             trainer_wins += 1
         total_games += 1
-        print(learner.getHypothesis())
         print("Games Played: " + str(total_games))
         print("% Games Won: " + str(learner_wins / float(total_games) * 100))
         print("% Games Lost: " + str(trainer_wins / float(total_games) * 100))
