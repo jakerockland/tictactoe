@@ -127,7 +127,7 @@ class ExperimentGenerator:
         print('-----\n' + board[2][0] + '|' + board[2][1] + '|' + board[2][2] + '\n')
 
 class PerformanceSystem:
-    def __init__(self,game,hypothesis = [0.0] * 9,mode = 'X'):
+    def __init__(self,game,mode = 'X',hypothesis = [0.0] * 9):
         self.game = game
         self.hypothesis = hypothesis
         self.mode = mode

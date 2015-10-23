@@ -11,8 +11,8 @@ import learningsystem
 
 def train(iterations = 10000):
     game = learningsystem.ExperimentGenerator()
-    learner = learningsystem.PerformanceSystem(game,[0.0] * 9,'X')
-    trainer = learningsystem.PerformanceSystem(game,[0.0] * 9,'O')
+    learner = learningsystem.PerformanceSystem(game,'X')
+    trainer = learningsystem.PerformanceSystem(game,'O')
 
     learner_wins = 0
     trainer_wins = 0
