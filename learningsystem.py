@@ -12,8 +12,8 @@
 # x4: number of instances of possibilities with 3 O's (game over)
 # x5: number of instances of possibilities with 1 X and two empty spaces
 # x6: number of instances of possibilities with 1 O and two empty spaces
-# x7: number of X's on board
-# x8: number of O's on board
+# x7: number of instances of possibilities with 2 X's and one O
+# x8: number of instances of possibilities with 2 O's and one X
 
 import copy
 import random
@@ -189,8 +189,10 @@ class PerformanceSystem:
                 x5 += 1
             elif O_count == 1 and X_count == 0:
                 x6 += 1
-            x7 = X_count
-            x8 = O_count
+            elif X_count == 2 and O_count == 1:
+                x7 += 1
+            elif O_count == 2 and X_count == 1:
+                x8 += 1
         return x1,x2,x3,x4,x5,x6,x7,x8
 
     def performEvaluation(self,board = None):
@@ -211,13 +213,13 @@ class PerformanceSystem:
                 return 100
             if x4 > 0:
                 return -100
-            return (5 * x5 - 5 * x6 + 10 * x1 - 10 * x2) * (x7 + x8) / 8
+            return (5 * x5 + 10 * x1 - 15 * x2) * (x7 + x8) / 8
         else:
             if x4 > 0:
                 return 100
             if x3 > 0:
                 return -100
-            return (5 * x6 - 5 * x5 + 10 * x2 - 10 * x1) * (x7 + x8) / 8
+            return (5 * x6 + 10 * x2 - 15 * x1) * (x7 + x8) / 8
 
     def chooseMove(self):
         if self.mode == 'X':

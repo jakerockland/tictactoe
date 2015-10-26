@@ -64,8 +64,8 @@ def train(iterations = 10000, mode = 'fixed'):
 def main():
     iterations = int(input("Enter number of training games to play: "))
     print("Training computer...\n")
-    computer, learner_wins, trainer_wins, total_games = train(iterations,"random")
-    # computer, learner_wins, trainer_wins, total_games = train(iterations,"fixed")
+    # computer, learner_wins, trainer_wins, total_games = train(iterations,"random")
+    computer, learner_wins, trainer_wins, total_games = train(iterations,"fixed")
 
     print("Games Played: " + str(total_games))
     print("% Games Won: " + str(learner_wins / float(total_games) * 100))
