@@ -39,7 +39,7 @@ class ExperimentGenerator:
     def getHistory(self):
         return self.history
 
-    def numEmptySquares(self, board = None):
+    def numEmptySquares(self,board = None):
         if board is None:
             board = self.board
         num = 0
@@ -49,7 +49,7 @@ class ExperimentGenerator:
                     num += 1
         return num
 
-    def getPossibilities(self, board = None):
+    def getPossibilities(self,board = None):
         if board is None:
             board = self.board
         possibilities = []
@@ -73,7 +73,7 @@ class ExperimentGenerator:
         possibilities.append(diagonal_2)
         return possibilities
 
-    def getWinner(self, board = None):
+    def getWinner(self,board = None):
         if board is None:
             board = self.board
         possibilities = self.getPossibilities()
@@ -136,7 +136,7 @@ class PerformanceSystem:
     def getUpdateConstant(self):
         return self.update_constant
 
-    def setUpdateConstant(self, constant):
+    def setUpdateConstant(self,constant):
         self.update_constant = update_constant
 
     def getGame(self):
@@ -154,10 +154,10 @@ class PerformanceSystem:
     def getHypothesis(self):
         return self.hypothesis
 
-    def setHypothesis(self, hypothesis):
+    def setHypothesis(self,hypothesis):
         self.hypothesis = hypothesis
 
-    def getFeatures(self, board = None):
+    def getFeatures(self,board = None):
         if board is None:
             board = self.game.getBoard()
         possibilities = self.game.getPossibilities()
@@ -193,12 +193,31 @@ class PerformanceSystem:
             x8 = O_count
         return x1,x2,x3,x4,x5,x6,x7,x8
 
-    def performEvaluation(self, board = None):
+    def performEvaluation(self,board = None):
         if board is None:
             board = self.game.getBoard()
         x1,x2,x3,x4,x5,x6,x7,x8 = self.getFeatures(board)
         w0,w1,w2,w3,w4,w5,w6,w7,w8 = self.hypothesis
         return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6 + w7*x7 + w8*x8
+
+    def performFixedEvaluation(self,mode = None,board = None):
+        if board is None:
+            board = self.game.getBoard()
+        if mode is None:
+            mode = self.mode
+        x1,x2,x3,x4,x5,x6,x7,x8 = self.getFeatures(board)
+        if mode == 'X':
+            if x3 > 0:
+                return 100
+            if x4 > 0:
+                return -100
+            return (5 * x5 - 5 * x6 + 10 * x1 - 10 * x2) * (x7 + x8) / 8
+        else:
+            if x4 > 0:
+                return 100
+            if x3 > 0:
+                return -100
+            return (5 * x6 - 5 * x5 + 10 * x2 - 10 * x1) * (x7 + x8) / 8
 
     def chooseMove(self):
         if self.mode == 'X':
@@ -209,6 +228,20 @@ class PerformanceSystem:
         best_value = self.performEvaluation(best_successor)
         for successor in successors:
             value = self.performEvaluation(successor)
+            if value > best_value:
+                best_value = value
+                best_successor = successor
+        self.game.setBoard(best_successor)
+
+    def chooseFixed(self):
+        if self.mode == 'X':
+            successors = self.game.getXSuccessors()
+        else:
+            successors = self.game.getOSuccessors()
+        best_successor = successors[0]
+        best_value = self.performFixedEvaluation(best_successor)
+        for successor in successors:
+            value = self.performFixedEvaluation(successor)
             if value > best_value:
                 best_value = value
                 best_successor = successor

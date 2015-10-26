@@ -9,7 +9,7 @@
 import random
 import learningsystem
 
-def train(iterations = 10000):
+def train(iterations = 10000, mode = 'fixed'):
     game = learningsystem.ExperimentGenerator()
     learner = learningsystem.PerformanceSystem(game,'X')
     trainer = learningsystem.PerformanceSystem(game,'O')
@@ -33,7 +33,10 @@ def train(iterations = 10000):
                 learner.chooseMove()
                 player_turn = 'O'
             else:
-                trainer.chooseRandom()
+                if mode == 'fixed':
+                    trainer.chooseFixed()
+                else:
+                    trainer.chooseRandom()
                 player_turn = 'X'
 
         winner = game.getWinner()
@@ -61,7 +64,8 @@ def train(iterations = 10000):
 def main():
     iterations = int(input("Enter number of training games to play: "))
     print("Training computer...\n")
-    computer, learner_wins, trainer_wins, total_games = train(iterations)
+    computer, learner_wins, trainer_wins, total_games = train(iterations,"random")
+    # computer, learner_wins, trainer_wins, total_games = train(iterations,"fixed")
 
     print("Games Played: " + str(total_games))
     print("% Games Won: " + str(learner_wins / float(total_games) * 100))
