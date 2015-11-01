@@ -21,7 +21,7 @@ import random
 class ExperimentGenerator:
     def __init__(self):
         self.board = self.newGame()
-        self.history = [copy.deepcopy(self.board)]
+        self.history = []
 
     def newGame(self):
         board = [ [' ',' ',' '],
@@ -131,13 +131,6 @@ class PerformanceSystem:
         self.game = game
         self.hypothesis = hypothesis
         self.mode = mode
-        self.update_constant = 0.1
-
-    def getUpdateConstant(self):
-        return self.update_constant
-
-    def setUpdateConstant(self,constant):
-        self.update_constant = update_constant
 
     def getGame(self):
         return self.game
@@ -235,26 +228,16 @@ class PerformanceSystem:
                 best_successor = successor
         self.game.setBoard(best_successor)
 
-    def chooseFixed(self):
-        if self.mode == 'X':
-            successors = self.game.getXSuccessors()
-        else:
-            successors = self.game.getOSuccessors()
-        best_successor = successors[0]
-        best_value = self.performFixedEvaluation(best_successor)
-        for successor in successors:
-            value = self.performFixedEvaluation(successor)
-            if value > best_value:
-                best_value = value
-                best_successor = successor
-        self.game.setBoard(best_successor)
-
     def chooseRandom(self):
         if self.mode == 'X':
             successors = self.game.getXSuccessors()
         else:
             successors = self.game.getOSuccessors()
         self.game.setBoard(successors[random.randint(0,len(successors)-1)])
+
+    def chooseIdeal(self):
+        # FIXME
+        return
 
 class Critic:
     def __init__(self,performance_system):
@@ -263,9 +246,9 @@ class Critic:
 
     def getTrainingExamples(self):
         history = self.game.getHistory()
+        mode = self.performance_system.getMode()
         training_examples = []
         for i in range(len(history)):
-            mode = self.performance_system.getMode()
             winner = self.game.getWinner(history[i])
             empty_squares = self.game.numEmptySquares(history[i])
             board_features = self.performance_system.getFeatures(history[i])
@@ -290,17 +273,23 @@ class Critic:
         return training_examples
 
 class Generalizer:
-    def __init__(self,performance_system):
+    def __init__(self,performance_system,update_constant = 0.1):
         self.performance_system = performance_system
-        self.update_constant = performance_system.getUpdateConstant()
         self.hypothesis = self.performance_system.getHypothesis()
+        self.update_constant = update_constant
+
+    def getUpdateConstant(self):
+        return self.update_constant
+
+    def setUpdateConstant(self,constant):
+        self.update_constant = update_constant
 
     def updateHypothesis(self,history,training_examples):
         for i in range(len(history)):
             w0,w1,w2,w3,w4,w5,w6,w7,w8 = self.hypothesis
             v_eval = self.performance_system.performEvaluation(history[i])
-            x1,x2,x3,x4,x5,x6,x7,x8 = training_examples[i][0]
             v_train = training_examples[i][1]
+            x1,x2,x3,x4,x5,x6,x7,x8 = training_examples[i][0]
             w0 = w0 + self.update_constant*(v_train - v_eval)
             w1 = w1 + self.update_constant*(v_train - v_eval)*x1
             w2 = w2 + self.update_constant*(v_train - v_eval)*x2
@@ -310,4 +299,5 @@ class Generalizer:
             w6 = w6 + self.update_constant*(v_train - v_eval)*x6
             w7 = w7 + self.update_constant*(v_train - v_eval)*x7
             w8 = w8 + self.update_constant*(v_train - v_eval)*x8
-            return w0,w1,w2,w3,w4,w5,w6,w7,w8
+            self.hypothesis = w0,w1,w2,w3,w4,w5,w6,w7,w8
+        return self.hypothesis
