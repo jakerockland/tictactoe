@@ -235,10 +235,6 @@ class PerformanceSystem:
             successors = self.game.getOSuccessors()
         self.game.setBoard(successors[random.randint(0,len(successors)-1)])
 
-    def chooseIdeal(self):
-        # FIXME
-        return
-
 class Critic:
     def __init__(self,performance_system):
         self.performance_system = performance_system
