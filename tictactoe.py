@@ -27,9 +27,7 @@ def train(iterations = 10000):
             player_turn = 'X'
         else:
             player_turn = 'O'
-        # print(player_turn + " is playing first.")
         while (game.getWinner() is None) and (game.numEmptySquares() > 0):
-            # game.printBoard()
             if player_turn == 'X':
                 learner.chooseMove()
                 player_turn = 'O'
@@ -38,11 +36,6 @@ def train(iterations = 10000):
                 player_turn = 'X'
 
         winner = game.getWinner()
-        # game.printBoard()
-        # if winner is None:
-        #     print("Draw!")
-        # else:
-        #     print(winner + " won!\n")
         if winner == 'X':
             learner_wins += 1
         elif winner == 'O':
@@ -61,56 +54,51 @@ def train(iterations = 10000):
 
 def main():
     iterations = int(input("Enter number of training games to play: "))
-    print("Training computer...\n")
+    print("\nTraining computer...\n")
     computer, learner_wins, trainer_wins, total_games = train(iterations)
+    while True:
+        game = learningsystem.ExperimentGenerator()
+        computer.setGame(game)
+        start_turn = random.randint(0,1)
+        if start_turn == 1:
+            player_turn = 'X'
+        else:
+            player_turn = 'O'
+        print(player_turn + " is playing first.")
+        while (game.getWinner() is None) and (game.numEmptySquares() > 0):
+            game.printBoard()
+            if player_turn == 'X':
+                computer.chooseMove()
+                player_turn = 'O'
+            else:
+                x = int(input("Enter x coordinate [0,2]: "))
+                y = int(input("Enter y coordinate: [0,2]: "))
+                legal_move = game.makeMove(x,y,'O')
+                if not legal_move:
+                    print("Illegal move.")
+                else:
+                    player_turn = 'X'
 
-    # print("Games Played: " + str(total_games))
-    # print("% Games Won: " + str(round(learner_wins / float(total_games) * 100,2)))
-    # print("% Games Lost: " + str(round(trainer_wins / float(total_games) * 100,2)))
-    # print("% Cats Games: " + str(round((total_games - learner_wins - trainer_wins) / float(total_games) * 100,2)) + "\n")
+        winner = game.getWinner()
+        game.printBoard()
+        if winner is None:
+            print("Draw!")
+        else:
+            print(winner + " won!\n")
+        if winner == 'X':
+            learner_wins += 1
+        elif winner == 'O':
+            trainer_wins += 1
+        total_games += 1
+        print("Games Played: " + str(total_games))
+        print("% Games Won: " + str(learner_wins / float(total_games) * 100))
+        print("% Games Lost: " + str(trainer_wins / float(total_games) * 100))
+        print("% Cats Games: " + str((total_games - learner_wins - trainer_wins) / float(total_games) * 100) + "\n")
 
-    # while True:
-    #     game = learningsystem.ExperimentGenerator()
-    #     computer.setGame(game)
-    #     start_turn = random.randint(0,1)
-    #     if start_turn == 1:
-    #         player_turn = 'X'
-    #     else:
-    #         player_turn = 'O'
-    #     print(player_turn + " is playing first.")
-    #     while (game.getWinner() is None) and (game.numEmptySquares() > 0):
-    #         game.printBoard()
-    #         if player_turn == 'X':
-    #             computer.chooseMove()
-    #             player_turn = 'O'
-    #         else:
-    #             x = int(input("Enter x coordinate [0,2]: "))
-    #             y = int(input("Enter y coordinate: [0,2]: "))
-    #             legal_move = game.makeMove(x,y,'O')
-    #             if not legal_move:
-    #                 print("Illegal move.")
-    #             else:
-    #                 player_turn = 'X'
-    #     winner = game.getWinner()
-    #     game.printBoard()
-    #     if winner is None:
-    #         print("Draw!")
-    #     else:
-    #         print(winner + " won!\n")
-    #     if winner == 'X':
-    #         learner_wins += 1
-    #     elif winner == 'O':
-    #         trainer_wins += 1
-    #     total_games += 1
-    #     print("Games Played: " + str(total_games))
-    #     print("% Games Won: " + str(learner_wins / float(total_games) * 100))
-    #     print("% Games Lost: " + str(trainer_wins / float(total_games) * 100))
-    #     print("% Cats Games: " + str((total_games - learner_wins - trainer_wins) / float(total_games) * 100) + "\n")
-    #
-    #     critic = learningsystem.Critic(computer)
-    #     generalizer = learningsystem.Generalizer(computer)
-    #     training_examples = critic.getTrainingExamples()
-    #     computer.setHypothesis(generalizer.updateHypothesis(game.getHistory(),training_examples))
+        critic = learningsystem.Critic(computer)
+        generalizer = learningsystem.Generalizer(computer)
+        training_examples = critic.getTrainingExamples()
+        computer.setHypothesis(generalizer.updateHypothesis(game.getHistory(),training_examples))
 
 if __name__ == "__main__":
     main()
