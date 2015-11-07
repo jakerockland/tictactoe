@@ -18,7 +18,7 @@
 import copy
 import random
 
-class ExperimentGenerator:
+class ExperimentGenerator(object):
     def __init__(self):
         self.board = self.newGame()
         self.history = []
@@ -126,7 +126,7 @@ class ExperimentGenerator:
         print('-----\n' + board[1][0] + '|' + board[1][1] + '|' + board[1][2])
         print('-----\n' + board[2][0] + '|' + board[2][1] + '|' + board[2][2] + '\n')
 
-class PerformanceSystem:
+class PerformanceSystem(object):
     def __init__(self,game,mode = 'X',hypothesis = [0.0] * 9):
         self.game = game
         self.hypothesis = hypothesis
@@ -235,7 +235,7 @@ class PerformanceSystem:
             successors = self.game.getOSuccessors()
         self.game.setBoard(successors[random.randint(0,len(successors)-1)])
 
-class Critic:
+class Critic(object):
     def __init__(self,performance_system):
         self.performance_system = performance_system
         self.game = performance_system.getGame()
@@ -268,7 +268,7 @@ class Critic:
                 training_examples.append([board_features,-100])
         return training_examples
 
-class Generalizer:
+class Generalizer(object):
     def __init__(self,performance_system,update_constant = 0.1):
         self.performance_system = performance_system
         self.hypothesis = self.performance_system.getHypothesis()
